@@ -106,8 +106,8 @@ def download_files(url,path):
         fullFileName = str(imgName) + ".gif"
     elif url[-3:] == "png":
         fullFileName = str(imgName) + ".png"
-    elif ur[-4:] == "embd":
-        fullFileName = str(imgName) + ".embd"
+    elif ur[-4:] == "webm":
+        fullFileName = str(imgName) + ".webm"
      
     fullFileName = os.path.join(path, fullFileName)
     #download actual file if possible
