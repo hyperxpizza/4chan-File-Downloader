@@ -15,7 +15,7 @@ fileUrls = []
 root = Tk()
 root.title("4chan File Downloader")
 root.configure(bg="white")
-root.geometry("300x400")
+root.geometry("300x450")
 
 #functions
 def update_listbox():
@@ -95,6 +95,8 @@ def download():
         for fileUrl in fileUrls:
             download_files(fileUrl,path)
 
+        lb_tasks["text"] = "Done!"
+
 
 def download_files(url,path):
     
@@ -111,14 +113,12 @@ def download_files(url,path):
      
     fullFileName = os.path.join(path, fullFileName)
     #download actual file if possible
-    try: 
-        urllib.request.urlretrieve(url,fullFileName)
-        lb_tasks.insert("end","downloaded " + fullImgName)
-    except:
-        lb_tasks.insert("end", "error")
+    urllib.request.urlretrieve(url,fullFileName)
+    lb_tasks.insert("end","downloaded " + fullFileName)
+    
 
 #create widgets
-lbl_text = Label(root, text="4chan Meme Downloader", bg="white")
+lbl_text = Label(root, text="4chan File Downloader", bg="white")
 lbl_text.pack()
 
 lbl_disp = Label(root, text="", bg="white")
