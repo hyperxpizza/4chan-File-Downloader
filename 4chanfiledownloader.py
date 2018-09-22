@@ -13,7 +13,7 @@ fileUrls = []
 
 #create root window and set properties
 root = Tk()
-root.title("4chan Meme Downloader")
+root.title("4chan File Downloader")
 root.configure(bg="white")
 root.geometry("300x400")
 
@@ -106,7 +106,7 @@ def download_files(url,path):
         fullFileName = str(imgName) + ".gif"
     elif url[-3:] == "png":
         fullFileName = str(imgName) + ".png"
-    elif ur[-4:] == "webm":
+    elif url[-4:] == "webm":
         fullFileName = str(imgName) + ".webm"
      
     fullFileName = os.path.join(path, fullFileName)
