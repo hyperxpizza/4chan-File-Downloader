@@ -97,7 +97,6 @@ def download():
 
         lb_tasks["text"] = "Done!"
 
-
 def download_files(url,path):
     
     #random file name with the right format
