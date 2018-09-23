@@ -96,6 +96,7 @@ def download():
             download_files(fileUrl,path)
 
         lb_tasks.insert("end", "Done!")
+        baseAdresses = []
 
 def download_files(url,path):
     
