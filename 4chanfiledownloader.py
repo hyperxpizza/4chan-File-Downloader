@@ -42,7 +42,6 @@ def add_url():
     txt_input.delete(0,"end")
     update_listbox()
 
-
 def del_one():
     #get the text of curr seleced task
     task = lb_tasks.get("active")
@@ -75,6 +74,8 @@ def exit():
 
 #download functions
 def download():
+    clear_listbox()
+    lb_tasks.insert("end", "Downloading...")
     path = dir_path()
     global baseAdresses
     for baseAdresse in baseAdresses:
@@ -90,12 +91,11 @@ def download():
             text = text["href"]
             url ="http:" + text
             fileUrls.append(url)
-
-        lb_tasks.delete(0, "end")
+       
         for fileUrl in fileUrls:
             download_files(fileUrl,path)
 
-        lb_tasks["text"] = "Done!"
+        lb_tasks.insert("end", "Done!")
 
 def download_files(url,path):
     
@@ -111,10 +111,10 @@ def download_files(url,path):
         fullFileName = str(imgName) + ".webm"
      
     fullFileName = os.path.join(path, fullFileName)
+    msg = "saved: " + fullFileName
     #download actual file if possible
     urllib.request.urlretrieve(url,fullFileName)
-    lb_tasks.insert("end","downloaded " + fullFileName)
-    
+    lb_tasks.insert("end", msg)
 
 #create widgets
 lbl_text = Label(root, text="4chan File Downloader", bg="white")
