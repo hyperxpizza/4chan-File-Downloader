@@ -1,149 +1,146 @@
-#libs
-from tkinter import *
-from tkinter import filedialog
+# In order to be able to import tkinter for
+# either in python 2 or in python 3
+try:                        
+    from tkinter import *   
+    from tkinter import filedialog 
+except:
+    from Tkinter import *
+    from Tkinter import filedialog
 import os
 from bs4 import BeautifulSoup
 import requests as rq
 import urllib.request
 import random
- 
-#important variables
-baseAdresses = []
-fileUrls = []
 
-#create root window and set properties
-root = Tk()
-root.title("4chan File Downloader")
-root.configure(bg="white")
-root.geometry("300x450")
 
-#functions
-def update_listbox():
-    #clear the listbox
-    clear_listbox()
-    #populate listbox
-    for baseAdresse in baseAdresses:
-        lb_tasks.insert("end", baseAdresse)
 
-def clear_listbox():
-    lb_tasks.delete(0, "end")
+class Window():
 
-def add_url():
-    task = txt_input.get()
-    if task != "":
-        baseAdresses.append(task)
+    def __init__(self):
+        self.baseAdresses = []
+        self.fileUrls = []
+        self.set_properties()
+        self.set_widgets()    
+
+
+    def download(self):
+        self.root.directory = filedialog.askdirectory()
+        self.dir_path = self.root.directory + "/"
+        self.clear_listbox()
+        self.lb_box.insert("end", "Downloading...")
         
-    elif task[4:] != "http":
-        lbl_disp["text"] = "Please Enter a valid 4chan Url!"     
+        #get full html code from every url
+        for self.baseAdresse in self.baseAdresses:
+            self.page = rq.get(self.baseAdresse)
+            self.soup = BeautifulSoup(self.page.content, "html.parser")
 
-    else:
-        lbl_disp["text"] = "Please Enter a valid 4chan Url!"
-    
-    txt_input.delete(0,"end")
-    update_listbox()
+            #get the right divs and modify them
+            self.divs = self.soup.find_all("div",{"class":"fileText"})
+            for self.div in self.divs:
+                self.text = self.div.find("a")
+                self.text = self.text["href"]
+                self.text = "http:"+ self.text
+                self.fileUrls.append(self.text)
 
-def del_one():
-    #get the text of curr seleced task
-    task = lb_tasks.get("active")
-    if task in tasks:
-        tasks.remove(task)
+            for self.fileUrl in self.fileUrls:
+                self.download_files(self.fileUrl)
 
-    update_listbox()
-
-def del_all():
-    #globalizing tasks list
-    global baseAdresses
-    baseAdresses = []
-    update_listbox()
-
-def del_one():
-    #get the text of curr seleced task
-    baseAdresse = lb_tasks.get("active")
-    if baseAdresse in baseAdresses:
-        baseAdresses.remove(baseAdresse)
-
-    update_listbox()
-
-def dir_path():
-   root.directory = filedialog.askdirectory()
-   dir_path = root.directory + "/"
-   return dir_path
-   
-def exit():
-    quit()
-
-#download functions
-def download():
-    clear_listbox()
-    lb_tasks.insert("end", "Downloading...")
-    path = dir_path()
-    global baseAdresses
-    for baseAdresse in baseAdresses:
-        #get full html code
-        page =  rq.get(baseAdresse)
-        soup = BeautifulSoup(page.content, "html.parser")
+            self.lb_box.insert("end", "Downloaded!")
+                
+    def download_files(self,url):
         
-        #find divs with the right image resolution                  
-        divs = soup.find_all("div",{"class":"fileText"})
-        for div in divs:
-            #extract href from 'a' tag and make a proper http link
-            text = div.find("a")
-            text = text["href"]
-            url ="http:" + text
-            fileUrls.append(url)
-       
-        for fileUrl in fileUrls:
-            download_files(fileUrl,path)
+        self.fileName = random.randint(1,100000)
+        if url[-3:] == "jpg":
+            self.fullFileName = str(self.fileName) + ".jpg"
+        elif url[-3:] == "gif":
+            self.fullFileName = str(self.fileName) + ".gif"
+        elif url[-3:] == "png":
+            self.fullFileName = str(self.fileName) + ".png"
+        elif url[-4:] == "webm":
+            self.fullFileName = str(self.fileName) + ".webm"
 
-        lb_tasks.insert("end", "Done!")
-        baseAdresses = []
+        self.fullFileName = os.path.join(self.dir_path, self.fullFileName)
+        self.msg = "saved: " + self.fullFileName
+        
+         #download actual file 
+        urllib.request.urlretrieve(url,self.fullFileName)
+        self.lb_box.insert("end", self.msg)
 
-def download_files(url,path):
-    
-    #random file name with the right format
-    imgName = random.randint(1,100000) 
-    if url[-3:] == "jpg":
-        fullFileName = str(imgName) + ".jpg"
-    elif url[-3:] == "gif":
-        fullFileName = str(imgName) + ".gif"
-    elif url[-3:] == "png":
-        fullFileName = str(imgName) + ".png"
-    elif url[-4:] == "webm":
-        fullFileName = str(imgName) + ".webm"
-     
-    fullFileName = os.path.join(path, fullFileName)
-    msg = "saved: " + fullFileName
-    #download actual file if possible
-    urllib.request.urlretrieve(url,fullFileName)
-    lb_tasks.insert("end", msg)
 
-#create widgets
-lbl_text = Label(root, text="4chan File Downloader", bg="white")
-lbl_text.pack()
+    def add_url(self):
+        self.url = self.txt_input.get()
 
-lbl_disp = Label(root, text="", bg="white")
-lbl_disp.pack()
+        self.baseAdresses.append(self.url)
+        
+        self.txt_input.delete(0,"end")
+        self.update_listbox()
 
-txt_input = Entry(root, width=225)
-txt_input.pack()
+    def update_listbox(self):
+        self.clear_listbox()
+        for self.baseAdresse in self.baseAdresses:
+            self.lb_box.insert("end", self.baseAdresse)
 
-btn_add_task = Button(root,text = "Add 4chan Thread Url", fg="green", bg="white", command = add_url)
-btn_add_task.pack()
 
-btn_del_one = Button(root,text = "Delete One", fg="green", bg="white", command = del_one)
-btn_del_one.pack()
+    def del_all(self):
+        self.baseAdresses = []
+        self.fileUrls = []
+        self.update_listbox()
 
-btn_del_all = Button(root,text = "Delete All", fg="green", bg="white", command = del_all)
-btn_del_all.pack()
+    def view_baseAdresses(self):
+        for self.baseAdresse in self.baseAdresses:
+            self.lb_box.insert("end", self.baseAdresse)
 
-btn_download = Button(root,text = "Download", fg="green", bg="white", command = download)
-btn_download.pack()
 
-btn_exit = Button(root,text="Exit", bg="white", fg="green", command=exit)
-btn_exit.pack()
+    def clear_listbox(self):
+        self.lb_box.delete(0, "end")
 
-lb_tasks = Listbox(root,width=300)
-lb_tasks.pack()
+    def set_properties(self):
+        self.root = Tk()
+        self.root.geometry("300x400")
+        self.root.configure(background='white')
+        self.root.resizable(True,False)
+        self.root.title("4chan File Downloader")
 
-#main event loop
-root.mainloop()
+    def set_widgets(self):
+        self.lbl_text = Label(self.root, text="4chan File Downloader", bg="white")
+        self.lbl_text.pack()
+
+        self.lbl_disp = Label(self.root, text="", bg="white")
+        self.lbl_disp.pack()
+
+        self.txt_input = Entry(self.root, width=225)
+        self.txt_input.pack()
+
+        self.btn_add_task = Button(self.root,text = "Add 4chan Thread Url", fg="green", bg="white", command = self.add_url)
+        self.btn_add_task.pack()
+
+        self.view_btn = Button(self.root,text="View urls",fg="green", bg="white", command = self.view_baseAdresses)
+        self.view_btn.pack()
+
+        self.btn_del_all = Button(self.root,text = "Delete Urls", fg="green", bg="white", command = self.del_all)
+        self.btn_del_all.pack()
+
+        self.btn_download = Button(self.root,text = "Download", fg="green", bg="white", command = self.download)
+        self.btn_download.pack()
+
+        self.btn_clear_lbbox = Button(self.root, text = "Clear Listbox", fg="green", bg="white", command=self.clear_listbox)
+        self.btn_clear_lbbox.pack()
+
+        self.btn_exit = Button(self.root,text="Exit", bg="white", fg="green", command=self.exit)
+        self.btn_exit.pack()
+
+        self.lb_box = Listbox(self.root,width=300)
+        self.lb_box.pack()
+
+    def exit(self):
+        quit()
+
+
+def Main():
+    app = Window()
+    app.root.mainloop()
+
+
+if __name__ == "__main__":
+    Main()
+
